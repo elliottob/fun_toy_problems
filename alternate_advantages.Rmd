@@ -1,0 +1,77 @@
+---
+title: "alternate advantages"
+author: "Elliott O'Brien"
+date: "5/19/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(knitr)
+library(kableExtra)
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+theme_set(
+  theme_grey(base_size=12) +
+    theme(
+      plot.title = element_text(hjust = 0.5),
+      panel.background = element_rect(fill = 'light gray')
+    )
+)
+```
+
+```{r}
+set.seed(42)
+N <- 2000
+
+roll_table <- tibble(
+  roll = sort(c(seq(1, N, 1), seq(1, N, 1)), decreasing = F),
+  die_1 = rdunif(2*N, 1, 20),
+  die_2 = rdunif(2*N, 1, 20),
+  advantage = pmax(die_1, die_2),
+  disadvantage = pmin(die_1, die_2)
+)
+
+head(roll_table)
+
+outcomes_table <- roll_table %>%
+  group_by(roll) %>%
+  summarize(
+    adv_on_disadv = max(disadvantage),
+    disadv_on_adv = min(advantage)
+  )
+
+head(outcomes_table)
+```
+
+```{r}
+outcomes_table %>%
+  summarize(
+    adv_on_disadv_mean = mean(adv_on_disadv),
+    disadv_on_adv_mean = mean(disadv_on_adv)
+  )
+
+outcomes_table_long <- outcomes_table %>%
+  pivot_longer(
+    cols = c(adv_on_disadv, disadv_on_adv),
+    names_to = 'advantage_rule'
+  )
+
+outcomes_table_long %>%
+  ggplot() + 
+  geom_histogram(aes(x=value, fill=advantage_rule), position='dodge', binwidth=1)
+
+```
+
+```{r}
+outcomes_table_long %>%
+  group_by(value) %>%
+  summarize(
+    `% A on D` = mean(advantage_rule == 'adv_on_disadv'),
+    `% D on A` = mean(advantage_rule == 'disadv_on_adv'),
+    `Dominant Rule` = if_else(`% A on D` > `% D on A`, 'Adv. on Disadv.', 'Disadv. on Adv.')
+  ) %>% 
+  ungroup %>%
+  rename(`Required Roll Value` = value) %>% 
+  kable(digits = 3, caption='Dominant Advantage Rules by Roll Value') %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = F)
+```
