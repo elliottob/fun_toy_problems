@@ -1,9 +1,19 @@
 ---
-title: "alternate advantages"
+title: "Alternate Advantage/Disadvantage Rolling"
 author: "Elliott O'Brien"
 date: "5/19/2020"
 output: html_document
 ---
+
+# BACKGROUND
+
+source: https://fivethirtyeight.com/features/can-you-find-the-best-dungeons-dragons-strategy/
+
+The fifth edition of Dungeons & Dragons introduced a system of “advantage and disadvantage.” When you roll a die “with advantage,” you roll the die twice and keep the higher result. Rolling “with disadvantage” is similar, except you keep the lower result instead. The rules further specify that when a player rolls with both advantage and disadvantage, they cancel out, and the player rolls a single die. Yawn!
+
+There are two other, more mathematically interesting ways that advantage and disadvantage could be combined. First, you could have “advantage of disadvantage,” meaning you roll twice with disadvantage and then keep the higher result. Or, you could have “disadvantage of advantage,” meaning you roll twice with advantage and then keep the lower result. With a fair 20-sided die, which situation produces the highest expected roll: advantage of disadvantage, disadvantage of advantage or rolling a single die?
+
+Extra Credit: Instead of maximizing your expected roll, suppose you need to roll N or better with your 20-sided die. For each value of N, is it better to use advantage of disadvantage, disadvantage of advantage or rolling a single die?
 
 ```{r setup, include=FALSE}
 library(knitr)
@@ -18,6 +28,10 @@ theme_set(
     )
 )
 ```
+
+# Simulate the rolls.  
+
+We'll need two rolls to determine advantage or disadvatage.  But for advantage-on-disadvantage (or vice-versa) we'll need an additional pair of dice rolls, so 4 total rolls to determine the outcome of each scenario. In the code block below, we simulate 4,000 rolls, 2,000 per die, those 2-die representing a rolling for either advantage-on-disadvantage or disadvantage-on-advantage. A total of 1,000 simulations are suggested, which makes 1,000 x 2 die x 2 scenarios being tested = 2 x 2,000 d20 roll simulations sampled indepentently.
 
 ```{r}
 set.seed(42)
@@ -43,6 +57,14 @@ outcomes_table <- roll_table %>%
 head(outcomes_table)
 ```
 
+# Results
+
+Winnder: Disadvantage-on-Advantage
+
+This is counterintuitive, but alas, the data does not lie.
+
+TODO: add a sample size slider to explore the diverging of distributions.
+
 ```{r}
 outcomes_table %>%
   summarize(
@@ -61,6 +83,8 @@ outcomes_table_long %>%
   geom_histogram(aes(x=value, fill=advantage_rule), position='dodge', binwidth=1)
 
 ```
+
+# Best Strategy by Desired Roll
 
 ```{r}
 outcomes_table_long %>%
